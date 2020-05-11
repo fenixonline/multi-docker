@@ -1,0 +1,27 @@
+language: generic 
+sudo: required
+services:
+    - docker
+
+before_install:
+    - docker build -t fenixonline/react-test -f ./client/Docker.dev ./client
+
+script:
+    - docker run -e CI=true fenixonline/react-test npm test
+
+after_success:
+    - docker build -t fenixonline/multi-client ./client
+    - docker build -t fenixonline/multi-nginx ./nginx
+    - docker build -t fenixonline/multi-server ./server
+    - docker build -t fenixonline/multi-worker ./worker
+    # log in to docker CLI
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    #take those images and push them to docker hub
+    - docker push fenixonline/multi-client 
+    - docker push fenixonline/multi-nginx
+    - docker push fenixonline/multi-server
+    - docker push fenixonline/multi-worker
+
+    
+
+
